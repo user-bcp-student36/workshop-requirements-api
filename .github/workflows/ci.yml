@@ -1,0 +1,38 @@
+name: API CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Ruff
+        run: ruff check app tests
+
+      - name: Mypy
+        run: mypy app
+
+      - name: Bandit
+        run: bandit -r app
+
+      - name: pip-audit
+        run: pip-audit
+
+      - name: Tests with coverage
+        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=85
